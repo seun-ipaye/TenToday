@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useGoals } from '@/context/goals';
 import { Colors } from '@/constants/theme';
-import { computeStreak, hasCompletedToday } from '@/store/goals';
+import { computeStreak, hasCompletedToday, todayKey } from '@/store/goals';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -15,11 +16,15 @@ function getGreeting(): string {
 }
 
 export default function HomeScreen() {
-  const { goals, loading } = useGoals();
+  const { goals, loading, refresh } = useGoals();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+
   if (loading) return null;
+
+  const today = todayKey();
 
   const doneCount = goals.filter(hasCompletedToday).length;
   const allDone = goals.length > 0 && doneCount === goals.length;
@@ -49,6 +54,9 @@ export default function HomeScreen() {
         {goals.map((goal) => {
           const done = hasCompletedToday(goal);
           const streak = computeStreak(goal.completedDates);
+          const partial = !done && goal.partialDate === today ? (goal.partialSeconds ?? 0) : 0;
+          const partialMin = Math.round(partial / 60);
+          const partialPct = `${Math.round((partial / 600) * 100)}%` as `${number}%`;
 
           return (
             <View key={goal.id} style={[styles.card, done && styles.cardDone]}>
@@ -71,12 +79,23 @@ export default function HomeScreen() {
                   {streak > 0 ? `${streak}-day streak` : 'Start your streak today'}
                 </Text>
 
+                {partial >= 60 && (
+                  <View style={styles.partialWrap}>
+                    <View style={styles.partialTrack}>
+                      <View style={[styles.partialFill, { width: partialPct }]} />
+                    </View>
+                    <Text style={styles.partialText}>{partialMin} min done today</Text>
+                  </View>
+                )}
+
                 {!done && (
                   <Pressable
                     style={styles.startButton}
                     onPress={() => router.push(`/session/${goal.id}`)}>
                     <Ionicons name="timer-outline" size={16} color="#fff" />
-                    <Text style={styles.startButtonText}>Start 10 min</Text>
+                    <Text style={styles.startButtonText}>
+                      {partial >= 60 ? 'Continue' : 'Start 10 min'}
+                    </Text>
                   </Pressable>
                 )}
               </View>
@@ -203,6 +222,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#fff',
+  },
+  partialWrap: {
+    gap: 5,
+    marginTop: 2,
+  },
+  partialTrack: {
+    height: 4,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  partialFill: {
+    height: 4,
+    backgroundColor: Colors.brand,
+    borderRadius: 2,
+    opacity: 0.6,
+  },
+  partialText: {
+    fontSize: 12,
+    color: '#aaa',
   },
   allDoneBanner: {
     alignItems: 'center',

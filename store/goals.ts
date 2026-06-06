@@ -74,9 +74,21 @@ export async function completeSession(goalId: string): Promise<Goal[]> {
   const goals = await loadGoals();
   const updated = goals.map((g) =>
     g.id === goalId && !g.completedDates.includes(todayKey())
-      ? { ...g, completedDates: [...g.completedDates, todayKey()] }
+      ? { ...g, completedDates: [...g.completedDates, todayKey()], partialSeconds: 0, partialDate: undefined }
       : g
   );
   await saveGoals(updated);
   return updated;
+}
+
+export async function savePartialProgress(goalId: string, addedSeconds: number): Promise<void> {
+  const goals = await loadGoals();
+  const today = todayKey();
+  const updated = goals.map((g) => {
+    if (g.id !== goalId) return g;
+    const isToday = g.partialDate === today;
+    const existing = isToday ? (g.partialSeconds ?? 0) : 0;
+    return { ...g, partialSeconds: Math.min(existing + addedSeconds, 600), partialDate: today };
+  });
+  await saveGoals(updated);
 }
