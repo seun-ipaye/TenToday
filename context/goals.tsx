@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Goal } from '@/types';
 import * as GoalStore from '@/store/goals';
 
@@ -8,6 +8,7 @@ type GoalContextType = {
   refresh: () => Promise<void>;
   addGoal: (name: string) => Promise<void>;
   completeSession: (goalId: string) => Promise<void>;
+  savePartialProgress: (goalId: string, addedSeconds: number) => Promise<void>;
 };
 
 const GoalContext = createContext<GoalContextType | null>(null);
@@ -16,10 +17,10 @@ export function GoalProvider({ children }: { children: React.ReactNode }) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     const loaded = await GoalStore.loadGoals();
     setGoals(loaded);
-  };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -38,8 +39,13 @@ export function GoalProvider({ children }: { children: React.ReactNode }) {
     setGoals(updated);
   };
 
+  const savePartialProgress = async (goalId: string, addedSeconds: number) => {
+    await GoalStore.savePartialProgress(goalId, addedSeconds);
+    await refresh();
+  };
+
   return (
-    <GoalContext.Provider value={{ goals, loading, refresh, addGoal, completeSession }}>
+    <GoalContext.Provider value={{ goals, loading, refresh, addGoal, completeSession, savePartialProgress }}>
       {children}
     </GoalContext.Provider>
   );

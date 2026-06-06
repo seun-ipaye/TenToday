@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 40,
+    alignItems: 'center',
   },
   eyebrow: {
     fontSize: 12,
@@ -140,6 +141,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: Colors.brand,
     marginBottom: 16,
+    textAlign: 'center',
   },
   title: {
     fontSize: 34,
@@ -147,11 +149,13 @@ const styles = StyleSheet.create({
     color: '#11181C',
     lineHeight: 42,
     marginBottom: 12,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
     lineHeight: 24,
+    textAlign: 'center',
   },
   inputRow: {
     flexDirection: 'row',

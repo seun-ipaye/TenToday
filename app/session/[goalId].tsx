@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useGoals } from '@/context/goals';
 import { Colors } from '@/constants/theme';
+import { savePartialProgress, todayKey } from '@/store/goals';
 
 const DURATION = 10 * 60; // 600 seconds
 
@@ -18,14 +19,29 @@ function formatTime(seconds: number): string {
 
 export default function SessionScreen() {
   const { goalId } = useLocalSearchParams<{ goalId: string }>();
-  const { goals, completeSession } = useGoals();
+  const { goals, completeSession, savePartialProgress: savePartial, refresh } = useGoals();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const goal = goals.find((g) => g.id === goalId);
-  const [remaining, setRemaining] = useState(DURATION);
+
+  // Resume from wherever the user left off today
+  const today = todayKey();
+  const existingPartial = goal?.partialDate === today ? (goal?.partialSeconds ?? 0) : 0;
+  const initialRemaining = DURATION - existingPartial;
+
+  const [remaining, setRemaining] = useState(initialRemaining);
   const [running, setRunning] = useState(true);
+
   const doneRef = useRef(false);
+  const savedRef = useRef(false);
+  const remainingRef = useRef(initialRemaining);
+  const initialRemainingRef = useRef(initialRemaining);
+
+  // Keep ref in sync so cancel handler and cleanup always have the latest value
+  useEffect(() => {
+    remainingRef.current = remaining;
+  }, [remaining]);
 
   useEffect(() => {
     if (!running) return;
@@ -42,10 +58,31 @@ export default function SessionScreen() {
     }
   }, [remaining]);
 
+  // Fallback for Android hardware back — best-effort, context won't update until useFocusEffect on home
+  useEffect(() => {
+    return () => {
+      if (!doneRef.current && !savedRef.current && goalId) {
+        const elapsed = initialRemainingRef.current - remainingRef.current;
+        if (elapsed > 0) savePartialProgress(goalId, elapsed);
+      }
+    };
+  }, [goalId]);
+
   async function finish() {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     if (goalId) await completeSession(goalId);
     router.replace(`/complete/${goalId}`);
+  }
+
+  async function handleCancel() {
+    setRunning(false);
+    const elapsed = initialRemainingRef.current - remainingRef.current;
+    if (!doneRef.current && !savedRef.current && elapsed > 0 && goalId) {
+      savedRef.current = true;
+      // Await both so context is updated before home screen renders
+      await savePartial(goalId, elapsed);
+    }
+    router.back();
   }
 
   const progress = (DURATION - remaining) / DURATION;
@@ -55,7 +92,7 @@ export default function SessionScreen() {
     <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Top bar */}
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()} hitSlop={16} style={styles.cancelButton}>
+        <Pressable onPress={handleCancel} hitSlop={16} style={styles.cancelButton}>
           <Ionicons name="close" size={20} color="#888" />
           <Text style={styles.cancelText}>Cancel</Text>
         </Pressable>
@@ -70,7 +107,6 @@ export default function SessionScreen() {
 
         <Text style={styles.timer}>{formatTime(remaining)}</Text>
 
-        {/* Progress bar */}
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: progressPercent }]} />
         </View>
@@ -84,11 +120,7 @@ export default function SessionScreen() {
         <Pressable
           style={styles.pauseButton}
           onPress={() => setRunning((r) => !r)}>
-          <Ionicons
-            name={running ? 'pause' : 'play'}
-            size={28}
-            color="#fff"
-          />
+          <Ionicons name={running ? 'pause' : 'play'} size={28} color="#fff" />
           <Text style={styles.pauseButtonText}>
             {running ? 'Pause' : 'Resume'}
           </Text>
