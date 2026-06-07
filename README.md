@@ -1,50 +1,59 @@
-# Welcome to your Expo app 👋
+# TenToday
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Features
 
-## Get started
+* Create up to 5 personal goals
+* Dedicated 10-minute focus sessions for each goal
+* Individual streak tracking
+* Daily progress tracking
+* Goal management (add and remove goals)
+* Daily reminders
+* Clean, distraction-free interface
 
-1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+* React Native
+* Expo
+* TypeScript
 
-   ```bash
-   npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+## Future Ideas
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* Progress history
+* Weekly and monthly insights
+* Smart reminders
+* Session notes and reflections
+* Friend accountability features
+* Personalized goal suggestions
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+## Philosophy
 
-When you're ready, run:
+Motivation comes and goes.
 
-```bash
-npm run reset-project
-```
+Consistency compounds.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+TenToday exists to help people stop waiting for motivation and start becoming the person they want to be, ten minutes at a time.
 
-## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
+## Why I Built It
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+I've always had things I wanted to get better at.
 
-## Join the community
+Guitar.
 
-Join our community of developers creating universal apps.
+French.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Stretching.
+
+The issue was never knowing what to do. The issue was staying consistent long enough to see results.
+
+Most productivity apps try to solve this by adding more features, more tracking, more planning, and more complexity.
+
+TenToday takes the opposite approach.
+
+The app isn't trying to organize your entire life.
+
+It's simply trying to help you show up today.
+
