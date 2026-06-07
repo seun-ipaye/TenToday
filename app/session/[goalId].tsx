@@ -93,8 +93,8 @@ export default function SessionScreen() {
       {/* Top bar */}
       <View style={styles.topBar}>
         <Pressable onPress={handleCancel} hitSlop={16} style={styles.cancelButton}>
-          <Ionicons name="close" size={20} color="#888" />
-          <Text style={styles.cancelText}>Cancel</Text>
+          <Ionicons name="chevron-back" size={20} color="#888" />
+          <Text style={styles.cancelText}>Back</Text>
         </Pressable>
       </View>
 
