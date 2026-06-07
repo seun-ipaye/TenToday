@@ -36,8 +36,9 @@ export default function RootLayout() {
           <Stack.Screen name="session/[goalId]" />
           <Stack.Screen name="complete/[goalId]" />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="add-goal" options={{ presentation: 'modal' }} />
         </Stack>
-        <StatusBar style="auto" />
+        <StatusBar style="dark" />
       </ThemeProvider>
     </GoalProvider>
   );

@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useGoals } from '@/context/goals';
 import { Colors } from '@/constants/theme';
 import { computeStreak, hasCompletedToday, todayKey } from '@/store/goals';
+
+const MAX_GOALS = 5;
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -16,11 +18,38 @@ function getGreeting(): string {
 }
 
 export default function HomeScreen() {
-  const { goals, loading, refresh } = useGoals();
+  const { goals, loading, refresh, deleteGoal } = useGoals();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+
+  function handleAddGoal() {
+    if (goals.length >= MAX_GOALS) {
+      Alert.alert(
+        'Goal limit reached',
+        `You can have up to ${MAX_GOALS} goals. Remove one to add a new one.`,
+        [{ text: 'OK' }],
+      );
+      return;
+    }
+    router.push('/add-goal');
+  }
+
+  function handleDeleteGoal(goalId: string, goalName: string) {
+    Alert.alert(
+      'Delete Goal',
+      `Remove "${goalName}"? All progress and streaks will be lost.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteGoal(goalId),
+        },
+      ],
+    );
+  }
 
   if (loading) return null;
 
@@ -39,12 +68,17 @@ export default function HomeScreen() {
             {allDone ? 'All done for today!' : `${doneCount} of ${goals.length} done today`}
           </Text>
         </View>
-        <Pressable
-          onPress={() => router.push('/settings')}
-          hitSlop={12}
-          style={styles.settingsButton}>
-          <Ionicons name="settings-outline" size={24} color="#999" />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable onPress={handleAddGoal} hitSlop={12} style={styles.addButton}>
+            <Ionicons name="add" size={26} color={Colors.brand} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/settings')}
+            hitSlop={12}
+            style={styles.settingsButton}>
+            <Ionicons name="settings-outline" size={24} color="#999" />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -59,7 +93,12 @@ export default function HomeScreen() {
           const partialPct = `${Math.round((partial / 600) * 100)}%` as `${number}%`;
 
           return (
-            <View key={goal.id} style={[styles.card, done && styles.cardDone]}>
+            <Pressable
+              key={goal.id}
+              style={[styles.card, done && styles.cardDone]}
+              onLongPress={() => handleDeleteGoal(goal.id, goal.name)}
+              delayLongPress={500}>
+
               <View style={[styles.accent, done && styles.accentDone]} />
 
               <View style={styles.cardContent}>
@@ -99,7 +138,7 @@ export default function HomeScreen() {
                   </Pressable>
                 )}
               </View>
-            </View>
+            </Pressable>
           );
         })}
 
@@ -140,8 +179,17 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 4,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  addButton: {
+    padding: 4,
+  },
   settingsButton: {
-    marginTop: 6,
+    padding: 4,
   },
   list: {
     paddingHorizontal: 20,
