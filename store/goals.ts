@@ -81,6 +81,13 @@ export async function completeSession(goalId: string): Promise<Goal[]> {
   return updated;
 }
 
+export async function deleteGoal(goalId: string): Promise<Goal[]> {
+  const goals = await loadGoals();
+  const updated = goals.filter((g) => g.id !== goalId);
+  await saveGoals(updated);
+  return updated;
+}
+
 export async function savePartialProgress(goalId: string, addedSeconds: number): Promise<void> {
   const goals = await loadGoals();
   const today = todayKey();

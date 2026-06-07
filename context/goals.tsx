@@ -7,6 +7,7 @@ type GoalContextType = {
   loading: boolean;
   refresh: () => Promise<void>;
   addGoal: (name: string) => Promise<void>;
+  deleteGoal: (goalId: string) => Promise<void>;
   completeSession: (goalId: string) => Promise<void>;
   savePartialProgress: (goalId: string, addedSeconds: number) => Promise<void>;
 };
@@ -34,6 +35,11 @@ export function GoalProvider({ children }: { children: React.ReactNode }) {
     setGoals(updated);
   };
 
+  const deleteGoal = async (goalId: string) => {
+    const updated = await GoalStore.deleteGoal(goalId);
+    setGoals(updated);
+  };
+
   const completeSession = async (goalId: string) => {
     const updated = await GoalStore.completeSession(goalId);
     setGoals(updated);
@@ -45,7 +51,7 @@ export function GoalProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <GoalContext.Provider value={{ goals, loading, refresh, addGoal, completeSession, savePartialProgress }}>
+    <GoalContext.Provider value={{ goals, loading, refresh, addGoal, deleteGoal, completeSession, savePartialProgress }}>
       {children}
     </GoalContext.Provider>
   );
